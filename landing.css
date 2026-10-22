@@ -240,3 +240,20 @@ svg.verde { color: var(--verde); }
   .preco .grande small { display: block; margin-top: 8px; }
   .caixa { padding: 22px 18px; }
 }
+
+/* caixa de cadastro no mesmo padrão das seções */
+.caixa-cab { margin-bottom: 20px; }
+.caixa-cab h3 { font-size: 28px; font-weight: 800; letter-spacing: -.8px; line-height: 1.15; margin: 10px 0 0; }
+.etiqueta-clara { display: inline-block; background: var(--verde-bg); color: #00733B; font-size: 13px; font-weight: 700; padding: 5px 12px; border-radius: 30px; }
+label.campo { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+label.campo small { font-size: 13.5px; font-weight: 500; }
+label.campo input { font-size: 16px; font-weight: 500; padding: 14px 16px; background: var(--fundo); border-color: transparent; }
+label.campo input:focus { background: #fff; }
+label.campo input::placeholder { color: var(--cinza-2); }
+.termo { font-size: 14px; line-height: 1.55; background: var(--fundo); color: var(--cinza); border: 1px solid var(--linha); }
+.termo b { color: var(--texto); }
+.termo b.tit { font-size: 15px; font-weight: 800; color: var(--texto); }
+.check { font-size: 15px; }
+#btnCadastrar { font-size: 17px; padding: 16px 22px; }
+#btnCadastrar:disabled { box-shadow: none; }
+.caixa h3 { font-weight: 800; letter-spacing: -.5px; }
