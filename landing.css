@@ -37,6 +37,8 @@ img { max-width: 100%; }
 .nav .links { margin-left: auto; display: flex; gap: 22px; align-items: center; }
 .nav .links a { color: #C9CCE6; text-decoration: none; font-size: 14.5px; font-weight: 600; }
 .nav .links a:hover { color: #fff; }
+.nav .links a.btn-ouro, .nav .links a.btn-ouro:hover { color: var(--noite); }
+section[id] { scroll-margin-top: 64px; }
 
 /* ---------- botões ---------- */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 12px; padding: 14px 22px; font-weight: 800; cursor: pointer; text-decoration: none; transition: transform .15s, box-shadow .15s, filter .15s; }
