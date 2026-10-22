@@ -231,7 +231,9 @@
 // Quem chega por link (mesmo com #cadastro no final) começa no topo; os botões da página continuam levando ao cadastro.
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 if (location.hash) { history.replaceState(null, '', location.pathname + location.search); window.scrollTo(0, 0); }
-window.addEventListener('load', () => { if (!location.hash) window.scrollTo(0, 0); });
+let mexeu = false;
+['click', 'wheel', 'touchstart', 'keydown'].forEach(t => addEventListener(t, () => { mexeu = true; }, { once: true, passive: true }));
+window.addEventListener('load', () => { if (!mexeu) window.scrollTo(0, 0); });
 
 const API = 'https://qasrccmtrllotukyeiax.supabase.co/functions/v1/agendador-auth';
 const VERSAO = '2.5.1';
