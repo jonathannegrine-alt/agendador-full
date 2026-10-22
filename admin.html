@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Agendador Full · Admin</title>
+<link rel="icon" href="icone.png">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<header class="topo"><div class="dentro">
+  <img src="icone.png" alt="">
+  <div><strong>Agendador Full</strong><span>Administração</span></div>
+  <div class="dir" id="quem"></div>
+</div></header>
+
+<main>
+  <!-- Login: e-mail → código. A sessão de admin fica salva neste navegador. -->
+  <section class="card oculto" id="login">
+    <h2>Entrar como administrador</h2>
+    <div id="etapaEmail">
+      <label class="campo">E-mail<input id="email" type="email" autocomplete="email"></label>
+      <button class="btn primario largo" id="btnCodigo">Enviar código</button>
+    </div>
+    <div id="etapaCodigo" class="oculto">
+      <label class="campo">Código de 6 dígitos (enviado para o seu e-mail)<input id="codigo" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
+      <button class="btn primario largo" id="btnEntrar">Entrar</button>
+      <p><button class="btn claro mini" id="btnVoltar">Trocar e-mail</button></p>
+    </div>
+    <div id="msgLogin"></div>
+  </section>
+
+  <section class="oculto" id="painel">
+    <div class="resumo" id="resumo"></div>
+    <div class="card rolar">
+      <div class="passo"><h2>Usuários</h2><button class="btn claro mini" id="btnAtualizar" style="margin-left:auto">↻ Atualizar</button></div>
+      <table class="tabela"><thead><tr>
+        <th>Usuário</th><th>Cadastro</th><th>Último uso</th><th>Situação</th><th></th>
+      </tr></thead><tbody id="linhas"></tbody></table>
+    </div>
+    <div id="msgPainel"></div>
+  </section>
+</main>
+
+<script>
+const API = 'https://qasrccmtrllotukyeiax.supabase.co/functions/v1/agendador-auth';
+const CHAVE = 'agendador_admin_token';
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const dataHora = t => t ? new Date(t).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+const ERROS = {
+  nao_cadastrado: 'Este e-mail não é administrador.', nao_admin: 'Este e-mail não é administrador.',
+  muitos_pedidos: 'Limite de 3 códigos por dia para este e-mail.', limite_geral: 'Limite diário de códigos atingido. Tente amanhã.',
+  codigo_errado: 'Código errado.', codigo_expirado: 'Código expirado. Peça outro.', muitas_tentativas: 'Muitas tentativas. Peça outro código.',
+  falha_servidor: 'O servidor não respondeu. Tente de novo.'
+};
+const ler = () => { try { return localStorage.getItem(CHAVE); } catch (e) { return null; } };
+const gravar = v => { try { v ? localStorage.setItem(CHAVE, v) : localStorage.removeItem(CHAVE); } catch (e) { /* sem armazenamento */ } };
+let token = ler();
+
+async function api(acao, dados = {}) {
+  const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ acao, ...dados }) });
+  return r.json();
+}
+const msg = (onde, tipo, txt) => { $(onde).innerHTML = txt ? `<div class="msg ${tipo}">${esc(txt)}</div>` : ''; };
+
+function mostrarLogin() {
+  $('#painel').classList.add('oculto');
+  $('#login').classList.remove('oculto');
+  $('#quem').innerHTML = '';
+}
+
+$('#btnCodigo').addEventListener('click', async () => {
+  const email = $('#email').value.trim().toLowerCase();
+  if (!email) return;
+  $('#btnCodigo').disabled = true;
+  const r = await api('pedir_codigo', { email }).catch(() => ({ ok: false, erro: 'falha_servidor' }));
+  $('#btnCodigo').disabled = false;
+  if (!r.ok) return msg('#msgLogin', 'erro', ERROS[r.erro] || 'Não consegui enviar o código.');
+  msg('#msgLogin', 'info', 'Código enviado. Confira o e-mail (vale 10 minutos).');
+  $('#etapaEmail').classList.add('oculto');
+  $('#etapaCodigo').classList.remove('oculto');
+  $('#codigo').focus();
+});
+$('#btnVoltar').addEventListener('click', () => { $('#etapaCodigo').classList.add('oculto'); $('#etapaEmail').classList.remove('oculto'); msg('#msgLogin'); });
+$('#btnEntrar').addEventListener('click', async () => {
+  const r = await api('confirmar', { email: $('#email').value.trim().toLowerCase(), codigo: $('#codigo').value.trim(), tipo: 'admin', dispositivo: 'site-admin' })
+    .catch(() => ({ ok: false, erro: 'falha_servidor' }));
+  if (!r.ok) return msg('#msgLogin', 'erro', (ERROS[r.erro] || 'Não consegui entrar.') + (r.restam != null ? ` Restam ${r.restam} tentativa(s).` : ''));
+  token = r.token; gravar(token);
+  msg('#msgLogin');
+  carregar();
+});
+$('#codigo').addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnEntrar').click(); });
+$('#email').addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnCodigo').click(); });
+
+async function carregar() {
+  if (!token) return mostrarLogin();
+  const r = await api('admin_lista', { token }).catch(() => ({ ok: false, erro: 'falha_servidor' }));
+  if (!r.ok) {
+    if (r.erro === 'sessao_invalida') { token = null; gravar(null); return mostrarLogin(); }
+    return msg('#msgPainel', 'erro', ERROS[r.erro] || 'Falha ao carregar.');
+  }
+  $('#login').classList.add('oculto');
+  $('#painel').classList.remove('oculto');
+  $('#quem').innerHTML = '<button class="btn claro mini" id="btnSair">Sair</button>';
+  $('#btnSair').addEventListener('click', async () => { await api('sair', { token }).catch(() => null); token = null; gravar(null); mostrarLogin(); });
+
+  const us = r.usuarios || [];
+  const ativos7 = us.filter(u => u.ultimo_uso && Date.now() - new Date(u.ultimo_uso) < 7 * 864e5).length;
+  $('#resumo').innerHTML = `
+    <div><b>${us.length}</b>cadastrados</div>
+    <div><b>${us.filter(u => u.conectado).length}</b>conectados agora</div>
+    <div><b>${ativos7}</b>usaram nos últimos 7 dias</div>
+    <div><b>${r.codigos_24h}/60</b>códigos enviados em 24 h</div>`;
+  $('#linhas').innerHTML = us.length ? us.map(u => {
+    const blq = u.situacao === 'bloqueado';
+    return `<tr>
+      <td><b>${esc(u.nome || '—')}</b><small>${esc(u.email)}</small></td>
+      <td>${dataHora(u.criado_em)}<small>termo v${esc(u.termo_versao ?? '—')}</small></td>
+      <td>${dataHora(u.ultimo_uso)}<small>${u.ext_versao ? 'extensão v' + esc(u.ext_versao) : 'ainda não entrou'}</small></td>
+      <td>${blq ? '<span class="pill blq">Bloqueado</span>' : u.conectado ? '<span class="pill on">Conectado</span>' : '<span class="pill off">Liberado</span>'}</td>
+      <td><div class="acoes-td">
+        ${blq ? `<button class="btn sucesso mini" data-acao="liberar" data-email="${esc(u.email)}">Liberar</button>`
+              : `<button class="btn perigo mini" data-acao="bloquear" data-email="${esc(u.email)}">Bloquear</button>`}
+        ${u.conectado ? `<button class="btn claro mini" data-acao="derrubar" data-email="${esc(u.email)}">Derrubar sessão</button>` : ''}
+      </div></td></tr>`;
+  }).join('') : '<tr><td colspan="5">Ninguém se cadastrou ainda.</td></tr>';
+  msg('#msgPainel');
+}
+
+$('#linhas').addEventListener('click', async ev => {
+  const b = ev.target.closest('[data-acao]');
+  if (!b) return;
+  const alvo = b.dataset.email, acao = b.dataset.acao;
+  const pergunta = { bloquear: `Bloquear ${alvo}? A extensão dele para na hora.`, liberar: `Liberar ${alvo}?`, derrubar: `Derrubar a sessão de ${alvo}? Ele vai precisar entrar de novo com um código.` }[acao];
+  if (!confirm(pergunta)) return;
+  b.disabled = true;
+  const r = acao === 'derrubar'
+    ? await api('admin_derrubar', { token, alvo })
+    : await api('admin_situacao', { token, alvo, situacao: acao === 'bloquear' ? 'bloqueado' : 'liberado' });
+  if (!r.ok) msg('#msgPainel', 'erro', 'Não consegui: ' + (r.erro || 'erro'));
+  carregar();
+});
+$('#btnAtualizar').addEventListener('click', carregar);
+
+carregar();
+</script>
+</body>
+</html>

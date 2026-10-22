@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agendador Full</title>
+<meta name="description" content="Extensão de Chrome que monitora o agendamento do Full e marca sozinha quando abre vaga no centro, dia e horário que você escolher.">
+<link rel="icon" href="icone.png">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<header class="topo"><div class="dentro">
+  <img src="icone.png" alt="">
+  <div><strong>Agendador Full</strong><span>Extensão de Chrome para vendedores do Full</span></div>
+</div></header>
+
+<main>
+  <span class="selo">Versão de teste · gratuita</span>
+  <h1>Marque o agendamento do Full sem ficar recarregando a página</h1>
+  <p class="sub">A extensão monitora o agendamento do seu envio e marca sozinha quando abre vaga no centro, dia e horário que você escolher.</p>
+
+  <!-- Passo 1: cadastro -->
+  <section class="card" id="cadastro">
+    <div class="passo"><span class="n">1</span><h2>Faça seu cadastro</h2></div>
+    <form id="form" novalidate>
+      <label class="campo">Seu nome<input id="nome" autocomplete="name" maxlength="80" required></label>
+      <label class="campo">Seu e-mail <small>(é por ele que você vai entrar na extensão)</small><input id="email" type="email" autocomplete="email" maxlength="120" required></label>
+      <div class="termo">
+        <b class="tit">⚠️ Termo de uso — versão de teste, uso por sua conta e risco</b>
+        <ol id="termo"></ol>
+      </div>
+      <label class="check"><input type="checkbox" id="aceito"><span>Li, entendi e aceito usar por minha conta e risco.</span></label>
+      <button class="btn primario largo" id="btnCadastrar" type="submit" disabled>Cadastrar</button>
+      <div id="msgCadastro"></div>
+    </form>
+  </section>
+
+  <!-- Passo 2: baixar e instalar -->
+  <section class="card apagado" id="instalar">
+    <div class="passo"><span class="n">2</span><h2>Baixe e instale no Chrome</h2></div>
+    <p><a class="btn sucesso" id="btnBaixar" href="agendador-full-ml.zip" download>⬇ Baixar a extensão <span id="versao"></span></a></p>
+    <ol class="inst">
+      <li>Crie uma pasta <b>fixa</b> no computador, por exemplo <code>Documentos\Agendador Full</code>, e extraia o arquivo baixado dentro dela. Vai aparecer a pasta <code>agendador-full-ml</code>.</li>
+      <li>No Chrome, digite na barra de endereço <code>chrome://extensions</code> e aperte Enter.</li>
+      <li>Ligue o <b>Modo do desenvolvedor</b> (canto superior direito).</li>
+      <li>Clique em <b>Carregar sem compactação</b> e escolha a pasta <code>agendador-full-ml</code> (a que tem o arquivo <code>manifest.json</code> dentro).</li>
+      <li>Clique no ícone de quebra-cabeça 🧩 ao lado da barra de endereço e fixe o <b>Agendador Full ML</b> (alfinete).</li>
+    </ol>
+    <div class="aviso"><b>Importante:</b> nas próximas versões, extraia <b>sempre na mesma pasta</b>, substituindo os arquivos, e clique em ↻ no Agendador em <code>chrome://extensions</code>. Se extrair em outro lugar, o Chrome entende como outra extensão e você perde o login e as configurações.</div>
+  </section>
+
+  <!-- Passo 3: entrar -->
+  <section class="card apagado" id="entrar">
+    <div class="passo"><span class="n">3</span><h2>Entre na extensão</h2></div>
+    <ol class="inst">
+      <li>Clique no ícone amarelo do Agendador e aceite o termo de uso.</li>
+      <li>Digite o <b>mesmo e-mail do cadastro</b> e clique em <b>Enviar código</b>.</li>
+      <li>Digite o código de 6 dígitos que chegou no seu e-mail (vale 10 minutos).</li>
+    </ol>
+    <p class="msg info">O código só é pedido no primeiro acesso de cada computador. O acesso vale para <b>um computador por vez</b>: entrar em outro encerra o anterior.</p>
+  </section>
+
+  <p class="rodape">Agendador Full · <a href="privacidade.html">Política de privacidade</a> · contato: <a href="mailto:agendadorfull.app@gmail.com">agendadorfull.app@gmail.com</a><br>
+    Ferramenta independente, sem ligação com o Mercado Livre.</p>
+</main>
+
+<script>
+const API = 'https://qasrccmtrllotukyeiax.supabase.co/functions/v1/agendador-auth';
+const VERSAO = '2.4.0';
+// Mesmo texto e versão do termo da extensão (popup.js: TERMO / TERMO_VERSAO).
+const TERMO_VERSAO = 2;
+const TERMO = [
+  ['Uso por sua conta e risco.', 'Toda a configuração (forma de envio, centros, dias e horários) é feita por você. A extensão apenas segue o que você configurou.'],
+  ['Ela marca sozinha.', 'Sem pedir confirmação na hora, marca o primeiro horário que encaixar na sua configuração. Em envio já agendado, pode trocar a reserva existente.'],
+  ['Pode falhar.', 'O Mercado Livre pode mudar a página a qualquer momento, e a extensão pode não marcar, marcar um horário diferente do esperado ou parar de funcionar.'],
+  ['Sem responsabilidade por prejuízos.', 'Não nos responsabilizamos por agendamentos errados, indesejados ou perdidos, troca de reserva ou de centro, reetiquetagem, atrasos, multas, cobranças, custos de transporte ou armazenagem, bloqueio ou suspensão da conta, nem por qualquer outro prejuízo, direto ou indireto, decorrente do uso.'],
+  ['Regras do Mercado Livre.', 'O uso de automação pode não ser permitido pelos termos do Mercado Livre. Esse risco é seu.'],
+  ['Confira sempre.', 'Confira no Mercado Livre a data, o horário e o centro de cada envio. A responsabilidade pelo envio e pelas regras do Full é sua.'],
+  ['Seus dados.', 'Envios, configurações e histórico ficam só no seu Chrome. No nosso servidor ficam apenas nome, e-mail, aceite do termo e dados de acesso (veja a política de privacidade).']
+];
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+$('#termo').innerHTML = TERMO.map(([t, x]) => `<li><b>${esc(t)}</b> ${esc(x)}</li>`).join('');
+$('#versao').textContent = 'v' + VERSAO;
+
+const ERROS = { email_invalido: 'Confira o e-mail digitado.', termo_obrigatorio: 'É preciso aceitar o termo de uso.', falha_servidor: 'O servidor não respondeu. Tente de novo em instantes.' };
+
+function liberarPassos(email) {
+  $('#instalar').classList.remove('apagado');
+  $('#entrar').classList.remove('apagado');
+  $('#msgCadastro').innerHTML = `<div class="msg ok">✔ Cadastro feito para <b>${esc(email)}</b>. Agora baixe e instale a extensão.</div>`;
+}
+
+function atualizarBotao() { $('#btnCadastrar').disabled = !$('#aceito').checked; }
+$('#aceito').addEventListener('change', atualizarBotao);
+
+$('#form').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const nome = $('#nome').value.trim(), email = $('#email').value.trim().toLowerCase();
+  if (!nome || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    $('#msgCadastro').innerHTML = '<div class="msg erro">Preencha o nome e um e-mail válido.</div>';
+    return;
+  }
+  $('#btnCadastrar').disabled = true;
+  $('#btnCadastrar').textContent = 'Cadastrando…';
+  try {
+    const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ acao: 'cadastrar', nome, email, termo_versao: TERMO_VERSAO, ext_versao: 'site' }) }).then(x => x.json());
+    if (!r.ok) throw new Error(ERROS[r.erro] || 'Não consegui cadastrar. Tente de novo.');
+    try { localStorage.setItem('agendador_cadastro', email); } catch (e) { /* sem armazenamento */ }
+    liberarPassos(email);
+    $('#instalar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) {
+    $('#msgCadastro').innerHTML = `<div class="msg erro">${esc(e.message || 'Falha de conexão.')}</div>`;
+  } finally {
+    $('#btnCadastrar').textContent = 'Cadastrar';
+    atualizarBotao();
+  }
+});
+
+// Quem já se cadastrou neste navegador vê o download direto.
+try { const e = localStorage.getItem('agendador_cadastro'); if (e) { $('#email').value = e; liberarPassos(e); } } catch (err) { /* sem armazenamento */ }
+</script>
+</body>
+</html>
