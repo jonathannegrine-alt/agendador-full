@@ -228,6 +228,11 @@
 </div></footer>
 
 <script>
+// Quem chega por link (mesmo com #cadastro no final) começa no topo; os botões da página continuam levando ao cadastro.
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+if (location.hash) { history.replaceState(null, '', location.pathname + location.search); window.scrollTo(0, 0); }
+window.addEventListener('load', () => { if (!location.hash) window.scrollTo(0, 0); });
+
 const API = 'https://qasrccmtrllotukyeiax.supabase.co/functions/v1/agendador-auth';
 const VERSAO = '2.5.1';
 // Mesmo texto e versão do termo da extensão (popup.js: TERMO / TERMO_VERSAO).
@@ -278,6 +283,15 @@ $('#form').addEventListener('submit', async ev => {
     $('#btnCadastrar').textContent = 'Criar meu acesso grátis';
     atualizarBotao();
   }
+});
+
+document.addEventListener('click', ev => {
+  const a = ev.target.closest('a[href^="#"]');
+  if (!a || a.getAttribute('href') === '#') return;
+  const alvo = document.querySelector(a.getAttribute('href'));
+  if (!alvo) return;
+  ev.preventDefault();
+  alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
 // Quem já se cadastrou neste navegador vê o download direto.
