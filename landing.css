@@ -231,3 +231,12 @@ svg.verde { color: var(--verde); }
 .termo b.tit { display: flex; align-items: center; gap: 6px; }
 .termo b.tit svg { color: #B37A00; }
 .btn-fake svg { vertical-align: -3px; }
+
+/* celular */
+.so-celular { display: none; }
+@media (max-width: 900px) {
+  .so-celular { display: block; margin-top: 16px; }
+  .preco { padding: 32px 22px; }
+  .preco .grande small { display: block; margin-top: 8px; }
+  .caixa { padding: 22px 18px; }
+}
