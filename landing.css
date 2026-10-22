@@ -205,3 +205,29 @@ footer a { color: #E6E8F7; }
 @media (min-width: 901px) and (max-width: 1050px) {
   .recursos { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ---------- ícones (sprite SVG no index.html) ---------- */
+svg.i, svg.i-sm, svg.i-xs, svg.i-md { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+svg.i { width: 26px; height: 26px; }
+svg.i-md { width: 22px; height: 22px; vertical-align: -4px; color: var(--verde); }
+svg.i-sm { width: 17px; height: 17px; vertical-align: -3px; }
+svg.i-xs { width: 13px; height: 13px; vertical-align: -2px; margin-right: 3px; color: #6B7088; }
+svg.cheio { fill: currentColor; }
+svg.verde { color: var(--verde); }
+.pill svg.i-xs { color: currentColor; stroke-width: 3; }
+.tile { width: 54px; height: 54px; border-radius: 16px; display: grid; place-items: center; color: #fff; box-shadow: 0 8px 20px -6px var(--sombra-tile, rgba(58,108,244,.5)); }
+.t-azul  { background: linear-gradient(135deg, #5B8CFF, #3A5BE0); --sombra-tile: rgba(58, 91, 224, .5); }
+.t-roxo  { background: linear-gradient(135deg, #8B6CFF, #5B3FD9); --sombra-tile: rgba(91, 63, 217, .5); }
+.t-verde { background: linear-gradient(135deg, #2FD38A, #00A35A); --sombra-tile: rgba(0, 163, 90, .45); }
+.t-ambar { background: linear-gradient(135deg, #FFC94D, #F29A00); --sombra-tile: rgba(242, 154, 0, .45); }
+.t-rosa  { background: linear-gradient(135deg, #FF7A9A, #E5395F); --sombra-tile: rgba(229, 57, 95, .45); }
+.dor .tile { margin-bottom: 4px; }
+.passo .ex { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.passo .ex svg.i-sm { color: var(--azul); }
+.passo .ex svg.i-sm.verde { color: var(--verde); }
+.controle li span.ic svg { stroke-width: 3; }
+.toast .ic { color: var(--verde); }
+.toast .ic svg.i { width: 20px; height: 20px; }
+.termo b.tit { display: flex; align-items: center; gap: 6px; }
+.termo b.tit svg { color: #B37A00; }
+.btn-fake svg { vertical-align: -3px; }
