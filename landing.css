@@ -147,6 +147,28 @@ section.sec.cinza { background: var(--fundo); }
 .preco .grande { font-size: 56px; font-weight: 800; color: var(--ouro); letter-spacing: -2px; line-height: 1; }
 .preco .grande small { font-size: 18px; color: #C9CCE6; letter-spacing: 0; font-weight: 600; }
 
+/* planos */
+.planos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 980px; margin: 0 auto; align-items: stretch; }
+.plano { background: var(--branco); border: 1px solid var(--linha); border-radius: 22px; padding: 28px 24px; box-shadow: var(--sombra); display: flex; flex-direction: column; position: relative; }
+.plano h3 { margin: 0 0 14px; font-size: 19px; }
+.plano .valor { font-size: 44px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; color: var(--noite); }
+.plano .valor small { font-size: 16px; color: var(--cinza); font-weight: 600; letter-spacing: 0; }
+.plano .cobra { color: var(--cinza); font-size: 15px; margin: 10px 0 18px; min-height: 22px; }
+.plano .economia { display: inline-block; align-self: flex-start; background: var(--verde-bg); color: #00562B; font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 20px; margin-bottom: 18px; }
+.plano .btn { margin-top: auto; }
+.plano.destaque { background: var(--noite); color: #fff; border-color: var(--noite); }
+.plano.destaque .valor { color: var(--ouro); }
+.plano.destaque .cobra, .plano.destaque .valor small { color: #C9CCE6; }
+.plano .selo { position: absolute; top: -12px; right: 20px; background: var(--ouro); color: var(--noite); font-size: 12px; font-weight: 800; padding: 5px 12px; border-radius: 20px; }
+.planos-nota { text-align: center; color: var(--cinza); font-size: 15px; max-width: 640px; margin: 26px auto 0; }
+.escolha { display: grid; gap: 10px; margin-bottom: 16px; }
+.escolha label { display: flex; align-items: center; gap: 12px; border: 1.5px solid var(--linha); border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: border-color .15s, background .15s; }
+.escolha label:has(input:checked) { border-color: var(--verde); background: var(--verde-bg); }
+.escolha input { width: 19px; height: 19px; margin: 0; accent-color: var(--verde); flex: none; }
+.escolha b { flex: 1; }
+.escolha span { color: var(--cinza); font-size: 14px; text-align: right; }
+@media (max-width: 900px) { .planos { grid-template-columns: 1fr; max-width: 440px; } }
+
 /* faq */
 .faq { max-width: 780px; margin: 0 auto; display: grid; gap: 12px; }
 .faq details { background: var(--branco); border: 1px solid var(--linha); border-radius: 14px; padding: 4px 20px; }

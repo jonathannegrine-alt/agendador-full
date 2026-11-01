@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="landing.css?v=5">
+<link rel="stylesheet" href="landing.css?v=6">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -49,14 +49,14 @@
 <!-- ================= HERO ================= -->
 <header class="hero"><div class="wrap">
   <div>
-    <span class="etiqueta"><i></i>Fase de teste gratuita · vagas limitadas</span>
+    <span class="etiqueta"><i></i>7 dias grátis · cancele quando quiser</span>
     <h1>Pare de recarregar o agendamento do Full. <em>Deixe a vaga vir até você.</em></h1>
     <p class="lead">O Agendador Full vigia a página de agendamento do seu envio 24 horas por dia e <b>marca sozinho</b> no instante em que abre vaga no centro, dia e horário que você escolheu.</p>
     <div class="ctas">
-      <a href="#cadastro" class="btn btn-ouro">Quero testar grátis →</a>
+      <a href="#cadastro" class="btn btn-ouro">Testar 7 dias grátis →</a>
       <a href="#como" class="btn btn-fantasma">Ver como funciona</a>
     </div>
-    <div class="garantias"><span>Sem cartão</span><span>Instala em 2 minutos</span><span>Você no controle</span></div>
+    <div class="garantias"><span>7 dias grátis</span><span>Instala em 1 minuto</span><span>Cancele quando quiser</span></div>
   </div>
 
   <div class="mock" aria-hidden="true">
@@ -148,15 +148,34 @@
   </div>
 </div></section>
 
-<!-- ================= PREÇO ================= -->
-<section class="sec"><div class="wrap">
-  <div class="preco">
-    <span class="etiqueta"><i></i>Fase de teste</span>
-    <h2>Teste grátis enquanto durar a fase de testes</h2>
-    <p>Estamos liberando o acesso para um grupo pequeno de vendedores. Cadastre-se agora e use sem pagar nada.</p>
-    <div class="grande">R$ 0 <small>durante o teste</small></div>
-    <p style="margin:22px 0 0"><a href="#cadastro" class="btn btn-ouro">Garantir meu acesso →</a></p>
+<!-- ================= PLANOS ================= -->
+<section class="sec" id="planos"><div class="wrap">
+  <div class="sec-tit"><span class="sobre">Planos</span><h2>Comece com 7 dias grátis</h2>
+    <p>Cadastre o cartão no Mercado Pago e use à vontade por 7 dias. Cancelou antes, não paga nada.</p></div>
+  <div class="planos">
+    <div class="plano">
+      <h3>Mensal</h3>
+      <div class="valor">R$ 29,90 <small>/mês</small></div>
+      <p class="cobra">Cobrado todo mês</p>
+      <a href="#cadastro" class="btn btn-azul largo" data-plano="mensal">Escolher mensal</a>
+    </div>
+    <div class="plano">
+      <h3>Semestral</h3>
+      <div class="valor">R$ 24,90 <small>/mês</small></div>
+      <p class="cobra">R$ 149,40 a cada 6 meses</p>
+      <span class="economia">Economize 17%</span>
+      <a href="#cadastro" class="btn btn-azul largo" data-plano="semestral">Escolher semestral</a>
+    </div>
+    <div class="plano destaque">
+      <span class="selo">Mais econômico</span>
+      <h3>Anual</h3>
+      <div class="valor">R$ 19,90 <small>/mês</small></div>
+      <p class="cobra">R$ 238,80 por ano, de uma vez</p>
+      <span class="economia">Economize 33%</span>
+      <a href="#cadastro" class="btn btn-ouro largo" data-plano="anual">Escolher anual</a>
+    </div>
   </div>
+  <p class="planos-nota">Pagamento pelo Mercado Pago. Os 7 dias grátis valem para a primeira assinatura; depois, renova sozinho a cada período até você cancelar. Cancelou, o acesso continua até o fim do período pago.</p>
 </div></section>
 
 <!-- ================= FAQ ================= -->
@@ -165,13 +184,15 @@
   <div class="faq">
     <details><summary>Ela marca sozinha mesmo, sem eu confirmar?</summary><p>Sim. Esse é o objetivo: quando abre uma vaga que encaixa na sua configuração, ela marca na hora, sem pedir confirmação. Por isso você configura só o que realmente aceita e revisa tudo antes de iniciar.</p></details>
     <details><summary>Preciso deixar o computador ligado?</summary><p>Sim. O computador precisa ficar ligado e com o Chrome aberto. A extensão impede que o computador entre em suspensão sozinho enquanto está monitorando.</p></details>
-    <details><summary>Funciona em qual navegador?</summary><p>No Google Chrome, no computador. Nesta fase de teste a instalação é manual (leva 2 minutos, com passo a passo abaixo).</p></details>
+    <details><summary>Funciona em qual navegador?</summary><p>No Google Chrome, no computador. A instalação é pela Chrome Web Store, em um clique, e as atualizações chegam sozinhas.</p></details>
     <details><summary>Por que no máximo 3 envios ao mesmo tempo?</summary><p>Cada envio fica numa aba recarregando a página de agendamento. Com muitos envios juntos, o computador fica pesado e a sua conta faz recarregamentos demais no Mercado Livre, o que pode gerar verificações ou bloqueios. Com até 3 envios, a extensão trabalha leve e com segurança. Terminou um? É só adicionar o próximo.</p></details>
     <details><summary>Posso usar em mais de um computador?</summary><p>O acesso vale para um computador por vez. Ao entrar em outro, o anterior é desconectado automaticamente.</p></details>
     <details><summary>E se o envio já estiver agendado?</summary><p>A extensão confere e avisa antes de iniciar. Se você continuar, ela tenta trocar a reserva quando achar uma vaga que encaixe nas suas opções.</p></details>
     <details><summary>E se o Mercado Livre mudar a página?</summary><p>Pode acontecer, e a extensão pode parar de funcionar até ser atualizada. Por isso confira sempre no Mercado Livre o agendamento marcado. Nós acompanhamos e liberamos as correções.</p></details>
     <details><summary>Quais dados vocês guardam?</summary><p>Só nome, e-mail, o aceite do termo de uso e dados de acesso. Seus envios, configurações e qualquer dado da sua conta do Mercado Livre ficam apenas no seu navegador. Veja a <a href="privacidade.html">política de privacidade</a>.</p></details>
-    <details><summary>Quanto custa?</summary><p>Durante a fase de teste, nada. Antes de qualquer cobrança, avisaremos por e-mail com antecedência.</p></details>
+    <details><summary>Quanto custa?</summary><p>Mensal R$ 29,90; semestral R$ 149,40 (R$ 24,90 por mês); anual R$ 238,80 (R$ 19,90 por mês). A primeira assinatura tem 7 dias grátis.</p></details>
+    <details><summary>Preciso cadastrar o cartão para testar?</summary><p>Sim. O cartão fica cadastrado no Mercado Pago, e a primeira cobrança só acontece no fim dos 7 dias. Se cancelar antes, nada é cobrado.</p></details>
+    <details><summary>Como eu cancelo?</summary><p>No Mercado Pago, em Assinaturas, ou pelo link "Assinatura" no rodapé da extensão. O acesso continua até o fim do período já pago.</p></details>
   </div>
 </div></section>
 
@@ -179,45 +200,54 @@
 <section class="sec" id="cadastro"><div class="wrap cad">
   <div class="cad-lado">
     <span class="sec-tit" style="margin:0;text-align:left"><span class="sobre">Comece agora</span></span>
-    <h2>Teste grátis em 3 passos</h2>
-    <p>Faça o cadastro, baixe a extensão e entre com o seu e-mail. Em poucos minutos ela já está vigiando o seu próximo envio.</p>
-    <div class="msg info so-celular">Está no celular? Pode criar o seu acesso por aqui. A extensão funciona no <b>Chrome do computador</b>: depois é só abrir este mesmo site no computador para baixar.</div>
+    <h2>Comece em 3 passos</h2>
+    <p>Faça o cadastro, escolha o plano e instale a extensão. Em poucos minutos ela já está vigiando o seu próximo envio.</p>
+    <div class="msg info so-celular">Está no celular? Pode criar o seu acesso e assinar por aqui. A extensão funciona no <b>Chrome do computador</b>: depois é só abrir este mesmo site no computador para instalar.</div>
     <div class="etapas-mini">
       <div><i>1</i>Cadastro com nome e e-mail</div>
-      <div><i>2</i>Baixe e instale no Chrome</div>
-      <div><i>3</i>Entre com o código que chega no e-mail</div>
+      <div><i>2</i>Escolha o plano (7 dias grátis)</div>
+      <div><i>3</i>Instale e entre com o código do e-mail</div>
     </div>
   </div>
 
   <div>
     <div class="caixa" id="boxCadastro">
-      <div class="caixa-cab"><span class="etiqueta-clara">Grátis · leva 1 minuto</span><h3>Criar meu acesso</h3></div>
+      <div class="caixa-cab"><span class="etiqueta-clara">Leva 1 minuto</span><h3>Criar meu acesso</h3></div>
       <form id="form" novalidate>
         <label class="campo">Seu nome<input id="nome" autocomplete="name" maxlength="80" required></label>
         <label class="campo">Seu e-mail <small>— é com ele que você entra na extensão</small><input id="email" type="email" autocomplete="email" maxlength="120" required></label>
         <div class="termo">
-          <b class="tit"><svg class="i-sm"><use href="#i-alerta"/></svg> Termo de uso — versão de teste, uso por sua conta e risco</b>
+          <b class="tit"><svg class="i-sm"><use href="#i-alerta"/></svg> Termo de uso — uso por sua conta e risco</b>
           <ol id="termo"></ol>
         </div>
         <label class="check"><input type="checkbox" id="aceito"><span>Li, entendi e aceito usar por minha conta e risco.</span></label>
-        <button class="btn btn-ouro largo" id="btnCadastrar" type="submit" disabled>Criar meu acesso grátis</button>
+        <button class="btn btn-ouro largo" id="btnCadastrar" type="submit" disabled>Criar meu acesso</button>
         <div id="msgCadastro"></div>
       </form>
     </div>
 
+    <div class="caixa oculto" id="boxPlano" style="margin-top:22px">
+      <div class="caixa-cab"><span class="etiqueta-clara">7 dias grátis na primeira assinatura</span><h3>Escolha o seu plano</h3></div>
+      <p style="margin:-8px 0 14px;color:var(--cinza)">Assinatura de <b id="emailPlano"></b></p>
+      <div class="escolha">
+        <label><input type="radio" name="plano" value="mensal"><b>Mensal</b><span>R$ 29,90 por mês</span></label>
+        <label><input type="radio" name="plano" value="semestral"><b>Semestral</b><span>R$ 149,40 a cada 6 meses<br>(R$ 24,90/mês)</span></label>
+        <label><input type="radio" name="plano" value="anual"><b>Anual</b><span>R$ 238,80 por ano<br>(R$ 19,90/mês)</span></label>
+      </div>
+      <button class="btn btn-ouro largo" id="btnAssinar" type="button">Continuar no Mercado Pago</button>
+      <p style="margin:12px 0 0;color:var(--cinza);font-size:14px">O cartão fica no Mercado Pago, e a cobrança só acontece no fim dos 7 dias grátis. Cancele quando quiser.</p>
+      <div id="msgPlano"></div>
+    </div>
+
     <div class="caixa instalar oculto" id="instalar">
-      <h3><svg class="i-md"><use href="#i-download"/></svg> Baixe e instale no Chrome</h3>
-      <p style="margin:0 0 16px"><a class="btn btn-verde" id="btnBaixar" href="agendador-full-ml.zip" download><svg class="i-sm"><use href="#i-download"/></svg> Baixar a extensão <span id="versao"></span></a></p>
+      <h3><svg class="i-md"><use href="#i-download"/></svg> Instale no Chrome</h3>
+      <p style="margin:0 0 16px"><a class="btn btn-verde" id="btnLoja" href="#" target="_blank" rel="noopener"><svg class="i-sm"><use href="#i-download"/></svg> Instalar pela Chrome Web Store</a></p>
       <ol class="inst">
-        <li>Crie uma pasta <b>fixa</b> no computador, por exemplo <code>Documentos\Agendador Full</code>, e extraia o arquivo baixado dentro dela. Vai aparecer a pasta <code>agendador-full-ml</code>.</li>
-        <li>No Chrome, digite <code>chrome://extensions</code> na barra de endereço e aperte Enter.</li>
-        <li>Ligue o <b>Modo do desenvolvedor</b> (canto superior direito).</li>
-        <li>Clique em <b>Carregar sem compactação</b> e escolha a pasta <code>agendador-full-ml</code> (a que tem o arquivo <code>manifest.json</code>).</li>
+        <li>Na página da loja, clique em <b>Usar no Chrome</b> e depois em <b>Adicionar extensão</b>.</li>
         <li>Clique no ícone de quebra-cabeça ao lado da barra de endereço e fixe o <b>Agendador Full</b> no alfinete.</li>
         <li>Clique no ícone amarelo, aceite o termo, digite <b>o mesmo e-mail do cadastro</b> e entre com o código de 6 dígitos que chegar no e-mail.</li>
       </ol>
-      <div class="aviso"><b>Importante:</b> nas próximas versões, extraia <b>sempre na mesma pasta</b>, por cima dos arquivos, e clique em ↻ no Agendador em <code>chrome://extensions</code>. Em outra pasta, o Chrome entende como outra extensão e você perde o login e as configurações.</div>
-      <p class="msg info">O acesso vale para <b>um computador por vez</b>. O código só é pedido no primeiro acesso de cada computador.</p>
+      <p class="msg info">O acesso vale para <b>um computador por vez</b>. O código só é pedido no primeiro acesso de cada computador. As atualizações chegam sozinhas pela loja.</p>
     </div>
   </div>
 </div></section>
@@ -236,9 +266,10 @@ let mexeu = false;
 window.addEventListener('load', () => { if (!mexeu) window.scrollTo(0, 0); });
 
 const API = 'https://qasrccmtrllotukyeiax.supabase.co/functions/v1/agendador-auth';
-const VERSAO = '2.6.3';
+const VERSAO = '2.7.1';
+const LOJA = 'https://chromewebstore.google.com/detail/ahecghnbgbcocmabfihghkaobhfbihhk';
 // Mesmo texto e versão do termo da extensão (popup.js: TERMO / TERMO_VERSAO).
-const TERMO_VERSAO = 2;
+const TERMO_VERSAO = 3;
 const TERMO = [
   ['Uso por sua conta e risco.', 'Toda a configuração (forma de envio, centros, dias e horários) é feita por você. A extensão apenas segue o que você configurou.'],
   ['Ela marca sozinha.', 'Sem pedir confirmação na hora, marca o primeiro horário que encaixar na sua configuração. Em envio já agendado, pode trocar a reserva existente.'],
@@ -246,19 +277,55 @@ const TERMO = [
   ['Sem responsabilidade por prejuízos.', 'Não nos responsabilizamos por agendamentos errados, indesejados ou perdidos, troca de reserva ou de centro, reetiquetagem, atrasos, multas, cobranças, custos de transporte ou armazenagem, bloqueio ou suspensão da conta, nem por qualquer outro prejuízo, direto ou indireto, decorrente do uso.'],
   ['Regras do Mercado Livre.', 'O uso de automação pode não ser permitido pelos termos do Mercado Livre. Esse risco é seu.'],
   ['Confira sempre.', 'Confira no Mercado Livre a data, o horário e o centro de cada envio. A responsabilidade pelo envio e pelas regras do Full é sua.'],
-  ['Seus dados.', 'Envios, configurações e histórico ficam só neste Chrome. No nosso servidor ficam apenas nome, e-mail, aceite do termo e dados de acesso (veja a política de privacidade no site).']
+  ['Assinatura.', 'O uso é por assinatura (mensal, semestral ou anual), paga pelo Mercado Pago. A primeira assinatura tem 7 dias grátis com o cartão já cadastrado: se cancelar dentro desse prazo, nada é cobrado; se não, a cobrança é feita no fim do teste e renova sozinha a cada período até você cancelar. Cancelando, o acesso continua até o fim do período já pago, sem reembolso proporcional. Sem assinatura ativa, a extensão não monitora nem marca.'],
+  ['Seus dados.', 'Envios, configurações e histórico ficam só neste Chrome. No nosso servidor ficam apenas nome, e-mail, aceite do termo, dados de acesso e a situação da assinatura. Os dados do cartão ficam só com o Mercado Pago (veja a política de privacidade no site).']
 ];
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 $('#termo').innerHTML = TERMO.map(([t, x]) => `<li><b>${esc(t)}</b> ${esc(x)}</li>`).join('');
-$('#versao').textContent = 'v' + VERSAO;
+$('#btnLoja').href = LOJA;
 
-const ERROS = { email_invalido: 'Confira o e-mail digitado.', termo_obrigatorio: 'É preciso aceitar o termo de uso.', falha_servidor: 'O servidor não respondeu. Tente de novo em instantes.' };
+const ERROS = {
+  email_invalido: 'Confira o e-mail digitado.', termo_obrigatorio: 'É preciso aceitar o termo de uso.',
+  nao_cadastrado: 'Este e-mail ainda não tem cadastro. Crie o seu acesso primeiro.', bloqueado: 'Este acesso está bloqueado. Fale com o suporte.',
+  ja_assinante: 'Você já tem uma assinatura ativa. Para trocar de plano ou de cartão, use as Assinaturas do Mercado Pago.',
+  plano_invalido: 'Escolha um plano.', falha_servidor: 'O servidor não respondeu. Tente de novo em instantes.'
+};
+const chamar = dados => fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados) }).then(x => x.json());
 
+// Depois do cadastro (ou vindo da extensão com ?email=): escolher o plano e instalar.
+let emailCadastro = '';
 function liberarInstalacao(email) {
+  emailCadastro = email;
+  $('#emailPlano').textContent = email;
+  $('#boxPlano').classList.remove('oculto');
   $('#instalar').classList.remove('oculto');
-  $('#msgCadastro').innerHTML = `<div class="msg ok">Acesso criado para <b>${esc(email)}</b>. Agora baixe e instale a extensão.</div>`;
+  $('#msgCadastro').innerHTML = `<div class="msg ok">Acesso criado para <b>${esc(email)}</b>. Agora escolha o plano e instale a extensão.</div>`;
 }
+function escolherPlano(plano) { const r = document.querySelector(`input[name="plano"][value="${plano}"]`); if (r) r.checked = true; }
+
+$('#btnAssinar').addEventListener('click', async () => {
+  const plano = (document.querySelector('input[name="plano"]:checked') || {}).value;
+  if (!plano) { $('#msgPlano').innerHTML = '<div class="msg erro">Escolha um dos planos.</div>'; return; }
+  const b = $('#btnAssinar');
+  b.disabled = true; b.textContent = 'Abrindo o Mercado Pago…'; $('#msgPlano').innerHTML = '';
+  try {
+    const r = await chamar({ acao: 'assinar', email: emailCadastro, plano });
+    if (!r.ok || !r.url) throw new Error(ERROS[r.erro] || 'Não consegui abrir o pagamento. Tente de novo.');
+    location.href = r.url;
+  } catch (e) {
+    $('#msgPlano').innerHTML = `<div class="msg erro">${esc(e.message || 'Falha de conexão.')}</div>`;
+    b.disabled = false; b.textContent = 'Continuar no Mercado Pago';
+  }
+});
+
+// Botões dos cards de plano: marcam o plano; quem já tem cadastro vai direto para a escolha.
+document.querySelectorAll('[data-plano]').forEach(a => a.addEventListener('click', ev => {
+  escolherPlano(a.dataset.plano);
+  if (!emailCadastro) return;
+  ev.preventDefault(); ev.stopPropagation();
+  $('#boxPlano').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}));
 
 function atualizarBotao() { $('#btnCadastrar').disabled = !$('#aceito').checked; }
 $('#aceito').addEventListener('change', atualizarBotao);
@@ -273,16 +340,15 @@ $('#form').addEventListener('submit', async ev => {
   $('#btnCadastrar').disabled = true;
   $('#btnCadastrar').textContent = 'Criando…';
   try {
-    const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ acao: 'cadastrar', nome, email, termo_versao: TERMO_VERSAO, ext_versao: 'site' }) }).then(x => x.json());
+    const r = await chamar({ acao: 'cadastrar', nome, email, termo_versao: TERMO_VERSAO, ext_versao: 'site' });
     if (!r.ok) throw new Error(ERROS[r.erro] || 'Não consegui cadastrar. Tente de novo.');
     try { localStorage.setItem('agendador_cadastro', email); } catch (e) { /* sem armazenamento */ }
     liberarInstalacao(email);
-    $('#instalar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('#boxPlano').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (e) {
     $('#msgCadastro').innerHTML = `<div class="msg erro">${esc(e.message || 'Falha de conexão.')}</div>`;
   } finally {
-    $('#btnCadastrar').textContent = 'Criar meu acesso grátis';
+    $('#btnCadastrar').textContent = 'Criar meu acesso';
     atualizarBotao();
   }
 });
@@ -296,8 +362,32 @@ document.addEventListener('click', ev => {
   alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
-// Quem já se cadastrou neste navegador vê o download direto.
-try { const e = localStorage.getItem('agendador_cadastro'); if (e) { $('#email').value = e; liberarInstalacao(e); } } catch (err) { /* sem armazenamento */ }
+// Quem já se cadastrou neste navegador (ou veio da extensão com ?email=) vê os planos e a instalação direto.
+const params = new URLSearchParams(location.search);
+let jaCadastrado = params.get('email') || '';
+try { jaCadastrado = jaCadastrado || localStorage.getItem('agendador_cadastro') || ''; } catch (err) { /* sem armazenamento */ }
+if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(jaCadastrado)) { $('#email').value = jaCadastrado; liberarInstalacao(jaCadastrado.toLowerCase()); }
+if (params.get('email')) {
+  $('#boxCadastro').classList.add('oculto');
+  addEventListener('load', () => $('#boxPlano').scrollIntoView({ block: 'start' }));
+}
+
+// Volta do Mercado Pago.
+const RETORNO = {
+  ok: ['ok', 'Assinatura recebida! Agora é só instalar a extensão e entrar com o seu e-mail. Se a extensão ainda disser que a assinatura não está ativa, espere alguns minutos e toque em "Já assinei".'],
+  pendente: ['info', 'O pagamento está em análise no Mercado Pago. Assim que ele for aprovado, a extensão é liberada sozinha.'],
+  falhou: ['erro', 'O pagamento não foi concluído. Escolha o plano e tente de novo.']
+};
+const volta = RETORNO[params.get('assinatura')];
+// Confere direto no Mercado Pago na volta, para o acesso não depender só do aviso automático.
+if (params.get('assinatura') === 'ok' && emailCadastro) chamar({ acao: 'conferir', email: emailCadastro }).catch(() => {});
+if (volta) {
+  $('#boxCadastro').classList.add('oculto');
+  $('#instalar').classList.remove('oculto');
+  $('#msgPlano').innerHTML = `<div class="msg ${volta[0]}">${esc(volta[1])}</div>`;
+  if (params.get('assinatura') !== 'falhou') $('#instalar').insertAdjacentHTML('afterbegin', `<div class="msg ${volta[0]}" style="margin:0 0 16px">${esc(volta[1])}</div>`);
+  addEventListener('load', () => $(params.get('assinatura') === 'falhou' ? '#boxPlano' : '#instalar').scrollIntoView({ block: 'start' }));
+}
 </script>
 </body>
 </html>

@@ -33,10 +33,11 @@
 
   <section class="oculto" id="painel">
     <div class="resumo" id="resumo"></div>
+    <div class="card"><div class="passo" id="cobranca"></div></div>
     <div class="card rolar">
       <div class="passo"><h2>Usuários</h2><button class="btn claro mini" id="btnAtualizar" style="margin-left:auto">↻ Atualizar</button></div>
       <table class="tabela"><thead><tr>
-        <th>Usuário</th><th>Cadastro</th><th>Último uso</th><th>Situação</th><th></th>
+        <th>Usuário</th><th>Cadastro</th><th>Último uso</th><th>Assinatura</th><th>Situação</th><th></th>
       </tr></thead><tbody id="linhas"></tbody></table>
     </div>
     <div id="msgPainel"></div>
@@ -49,6 +50,16 @@ const CHAVE = 'agendador_admin_token';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const dataHora = t => t ? new Date(t).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+const data = t => t ? new Date(t).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '—';
+const PLANO = { mensal: 'Mensal', semestral: 'Semestral', anual: 'Anual' };
+const SIT_ASS = { sem: 'sem assinatura', pendente: 'pendente', ativa: 'ativa', pausada: 'pausada', cancelada: 'cancelada' };
+// Coluna "Assinatura": cortesia, plano/situação e até quando o acesso vale.
+function celulaAssinatura(a) {
+  if (!a) return '—';
+  if (a.cortesia) return `<span class="pill on">Cortesia</span><small>${a.cortesia_ate ? 'até ' + data(a.cortesia_ate) : 'sem prazo'}</small>`;
+  const valido = a.pago_ate && new Date(a.pago_ate) > Date.now();
+  return `${esc(PLANO[a.plano] || '—')} · ${esc(SIT_ASS[a.situacao] || a.situacao)}<small>${a.pago_ate ? (valido ? 'acesso até ' : 'venceu em ') + data(a.pago_ate) : 'nunca pagou'}</small>`;
+}
 const ERROS = {
   nao_cadastrado: 'Este e-mail não é administrador.', nao_admin: 'Este e-mail não é administrador.',
   muitos_pedidos: 'Limite de 3 códigos por dia para este e-mail.', limite_geral: 'Limite diário de códigos atingido. Tente amanhã.',
@@ -113,20 +124,27 @@ async function carregar() {
     <div><b>${us.length}</b>cadastrados</div>
     <div><b>${us.filter(u => u.conectado).length}</b>conectados agora</div>
     <div><b>${ativos7}</b>usaram nos últimos 7 dias</div>
+    <div><b>${us.filter(u => u.assinatura && u.assinatura.situacao === 'ativa' && !u.assinatura.cortesia).length}</b>assinaturas ativas</div>
     <div><b>${r.codigos_24h}/60</b>códigos enviados em 24 h</div>`;
+  cobrancaAtiva = !!r.cobranca_ativa;
+  $('#cobranca').innerHTML = `<h2>Cobrança ${cobrancaAtiva ? '<span class="pill on">LIGADA</span>' : '<span class="pill off">DESLIGADA</span>'}</h2>
+    <span style="color:#6B7088;font-size:14px">${cobrancaAtiva ? 'Só usa quem tem assinatura válida ou cortesia.' : 'Todo mundo usa sem pagar (como na fase de teste).'}</span>
+    <button class="btn ${cobrancaAtiva ? 'perigo' : 'sucesso'} mini" id="btnCobranca" style="margin-left:auto">${cobrancaAtiva ? 'Desligar cobrança' : 'Ligar cobrança'}</button>`;
   $('#linhas').innerHTML = us.length ? us.map(u => {
     const blq = u.situacao === 'bloqueado';
     return `<tr>
       <td><b>${esc(u.nome || '—')}</b><small>${esc(u.email)}</small></td>
       <td>${dataHora(u.criado_em)}<small>termo v${esc(u.termo_versao ?? '—')}</small></td>
       <td>${dataHora(u.ultimo_uso)}<small>${u.ext_versao ? 'extensão v' + esc(u.ext_versao) : 'ainda não entrou'}</small></td>
+      <td>${celulaAssinatura(u.assinatura)}</td>
       <td>${blq ? '<span class="pill blq">Bloqueado</span>' : u.conectado ? '<span class="pill on">Conectado</span>' : '<span class="pill off">Liberado</span>'}</td>
       <td><div class="acoes-td">
         ${blq ? `<button class="btn sucesso mini" data-acao="liberar" data-email="${esc(u.email)}">Liberar</button>`
               : `<button class="btn perigo mini" data-acao="bloquear" data-email="${esc(u.email)}">Bloquear</button>`}
         ${u.conectado ? `<button class="btn claro mini" data-acao="derrubar" data-email="${esc(u.email)}">Derrubar sessão</button>` : ''}
+        <button class="btn claro mini" data-acao="cortesia" data-email="${esc(u.email)}">${u.assinatura && u.assinatura.cortesia ? 'Mudar cortesia' : 'Dar cortesia'}</button>
       </div></td></tr>`;
-  }).join('') : '<tr><td colspan="5">Ninguém se cadastrou ainda.</td></tr>';
+  }).join('') : '<tr><td colspan="6">Ninguém se cadastrou ainda.</td></tr>';
   msg('#msgPainel');
 }
 
@@ -134,6 +152,16 @@ $('#linhas').addEventListener('click', async ev => {
   const b = ev.target.closest('[data-acao]');
   if (!b) return;
   const alvo = b.dataset.email, acao = b.dataset.acao;
+  if (acao === 'cortesia') {
+    const resp = prompt(`Cortesia para ${alvo}:\n• número de dias (ex.: 30)\n• "sempre" = sem prazo\n• 0 = tirar a cortesia`, '30');
+    if (resp == null) return;
+    const dias = /^\s*sempre\s*$/i.test(resp) ? -1 : parseInt(resp, 10);
+    if (Number.isNaN(dias) || dias < -1) return msg('#msgPainel', 'erro', 'Digite um número de dias, "sempre" ou 0.');
+    b.disabled = true;
+    const r = await api('admin_cortesia', { token, alvo, dias });
+    if (!r.ok) msg('#msgPainel', 'erro', 'Não consegui: ' + (r.erro || 'erro'));
+    return carregar();
+  }
   const pergunta = { bloquear: `Bloquear ${alvo}? A extensão dele para na hora.`, liberar: `Liberar ${alvo}?`, derrubar: `Derrubar a sessão de ${alvo}? Ele vai precisar entrar de novo com um código.` }[acao];
   if (!confirm(pergunta)) return;
   b.disabled = true;
@@ -144,6 +172,18 @@ $('#linhas').addEventListener('click', async ev => {
   carregar();
 });
 $('#btnAtualizar').addEventListener('click', carregar);
+
+// Chave geral: desligada, todos usam sem pagar; ligada, vale a assinatura (ou cortesia).
+let cobrancaAtiva = false;
+$('#cobranca').addEventListener('click', async ev => {
+  if (!ev.target.closest('#btnCobranca')) return;
+  const ligar = !cobrancaAtiva;
+  if (!confirm(ligar ? 'LIGAR a cobrança? Quem não tiver assinatura válida nem cortesia para de usar na próxima conferência (até 30 min).'
+                     : 'DESLIGAR a cobrança? Todo mundo volta a usar sem pagar.')) return;
+  const r = await api('admin_cobranca', { token, ligar });
+  if (!r.ok) msg('#msgPainel', 'erro', 'Não consegui: ' + (r.erro || 'erro'));
+  carregar();
+});
 
 carregar();
 </script>
