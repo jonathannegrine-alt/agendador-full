@@ -90,3 +90,6 @@ code, .k { background: #EEF0F5; border-radius: 6px; padding: 1px 6px; font-size:
 .pill.blq { background: var(--vermelho-bg); color: var(--vermelho); }
 .acoes-td { display: flex; gap: 6px; flex-wrap: wrap; }
 .rolar { overflow-x: auto; }
+.cupom-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0 12px; align-items: end; }
+.cupom-form .btn { margin-bottom: 12px; }
+.cupom-check { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--cinza); margin-bottom: 12px; min-height: 44px; }

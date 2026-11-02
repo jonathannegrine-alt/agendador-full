@@ -35,6 +35,24 @@
     <div class="resumo" id="resumo"></div>
     <div class="card"><div class="passo" id="cobranca"></div></div>
     <div class="card rolar">
+      <div class="passo"><h2>Cupons de desconto</h2></div>
+      <p style="color:#6B7088;font-size:14px;margin:0 0 12px">O desconto vale só na <b>1ª cobrança</b>; depois a assinatura volta sozinha ao preço cheio. Só para assinatura nova.
+        Link pronto para mandar: <code>https://agendadorfull.app.br/?cupom=CODIGO#planos</code></p>
+      <div class="cupom-form">
+        <label class="campo">Código<input id="cupCodigo" maxlength="30" placeholder="EX.: AMIGO20" style="text-transform:uppercase"></label>
+        <label class="campo">Desconto (%)<input id="cupPct" type="number" min="1" max="95" placeholder="1 a 95"></label>
+        <label class="campo">Limite de usos<input id="cupMax" type="number" min="0" placeholder="vazio = sem limite"></label>
+        <label class="campo">Vale até (inclusive)<input id="cupAte" type="date"></label>
+        <label class="campo">Observação<input id="cupObs" maxlength="120" placeholder="para quem é (opcional)"></label>
+        <label class="cupom-check"><input type="checkbox" id="cupSemTeste"> Sem os 7 dias grátis (cobra na hora)</label>
+        <button class="btn primario" id="btnCupom">Criar cupom</button>
+      </div>
+      <div id="msgCupom"></div>
+      <table class="tabela"><thead><tr>
+        <th>Cupom</th><th>Desconto</th><th>Usos</th><th>Validade</th><th>Situação</th><th></th>
+      </tr></thead><tbody id="cupons"></tbody></table>
+    </div>
+    <div class="card rolar">
       <div class="passo"><h2>Usuários</h2><button class="btn claro mini" id="btnAtualizar" style="margin-left:auto">↻ Atualizar</button></div>
       <table class="tabela"><thead><tr>
         <th>Usuário</th><th>Cadastro</th><th>Último uso</th><th>Assinatura</th><th>Situação</th><th></th>
@@ -146,7 +164,53 @@ async function carregar() {
       </div></td></tr>`;
   }).join('') : '<tr><td colspan="6">Ninguém se cadastrou ainda.</td></tr>';
   msg('#msgPainel');
+  carregarCupons();
 }
+
+// ---------- Cupons ----------
+const ERROS_CUPOM = { codigo_invalido: 'Código: 3 a 30 letras, números, - ou _ (sem espaço nem acento).', pct_invalido: 'Desconto de 1% a 95%.',
+  codigo_existe: 'Já existe um cupom com esse código.' };
+const dataDia = d => d ? d.split('-').reverse().join('/') : 'sem prazo';
+async function carregarCupons() {
+  const r = await api('admin_cupons', { token }).catch(() => ({ ok: false }));
+  if (!r.ok) return msg('#msgCupom', 'erro', 'Não consegui carregar os cupons.');
+  const hoje = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' });
+  $('#cupons').innerHTML = (r.cupons || []).length ? r.cupons.map(c => {
+    const vencido = c.valido_ate && c.valido_ate < hoje, esgotado = c.max_usos && c.usos >= c.max_usos;
+    const sit = !c.ativo ? '<span class="pill off">Desligado</span>' : vencido ? '<span class="pill blq">Vencido</span>'
+      : esgotado ? '<span class="pill blq">Esgotado</span>' : '<span class="pill on">Valendo</span>';
+    const quem = (c.quem || []).map(q => `${esc(q.email)} (${esc(PLANO[q.plano] || q.plano || '—')}, ${data(q.em)})`).join('<br>');
+    return `<tr>
+      <td><b>${esc(c.codigo)}</b><small>${esc(c.obs || '')}</small></td>
+      <td>${c.pct}% na 1ª cobrança<small>${c.sem_teste ? 'sem 7 dias grátis' : 'com 7 dias grátis (1ª assinatura)'}</small></td>
+      <td>${c.usos}${c.max_usos ? ' de ' + c.max_usos : ''}<small>${quem || 'ninguém usou'}</small></td>
+      <td>${dataDia(c.valido_ate)}</td>
+      <td>${sit}</td>
+      <td><button class="btn ${c.ativo ? 'perigo' : 'sucesso'} mini" data-cupom="${esc(c.codigo)}" data-ativo="${c.ativo ? '0' : '1'}">${c.ativo ? 'Desligar' : 'Ligar'}</button></td></tr>`;
+  }).join('') : '<tr><td colspan="6">Nenhum cupom criado.</td></tr>';
+}
+$('#btnCupom').addEventListener('click', async () => {
+  const codigo = $('#cupCodigo').value.trim().toUpperCase(), pct = parseInt($('#cupPct').value, 10);
+  if (!/^[A-Z0-9_-]{3,30}$/.test(codigo)) return msg('#msgCupom', 'erro', ERROS_CUPOM.codigo_invalido);
+  if (!(pct >= 1 && pct <= 95)) return msg('#msgCupom', 'erro', ERROS_CUPOM.pct_invalido);
+  const b = $('#btnCupom'); b.disabled = true;
+  const r = await api('admin_cupom_criar', { token, codigo, pct, sem_teste: $('#cupSemTeste').checked,
+    max_usos: $('#cupMax').value, valido_ate: $('#cupAte').value, obs: $('#cupObs').value.trim() }).catch(() => ({ ok: false, erro: 'falha_servidor' }));
+  b.disabled = false;
+  if (!r.ok) return msg('#msgCupom', 'erro', ERROS_CUPOM[r.erro] || ERROS[r.erro] || 'Não consegui criar o cupom.');
+  ['#cupCodigo', '#cupPct', '#cupMax', '#cupAte', '#cupObs'].forEach(s => { $(s).value = ''; });
+  $('#cupSemTeste').checked = false;
+  msg('#msgCupom', 'ok', `Cupom ${codigo} criado. Link: https://agendadorfull.app.br/?cupom=${codigo}#planos`);
+  carregarCupons();
+});
+$('#cupons').addEventListener('click', async ev => {
+  const b = ev.target.closest('[data-cupom]');
+  if (!b) return;
+  b.disabled = true;
+  const r = await api('admin_cupom_ativo', { token, codigo: b.dataset.cupom, ativo: b.dataset.ativo === '1' }).catch(() => ({ ok: false }));
+  if (!r.ok) msg('#msgCupom', 'erro', 'Não consegui mudar o cupom.');
+  carregarCupons();
+});
 
 $('#linhas').addEventListener('click', async ev => {
   const b = ev.target.closest('[data-acao]');

@@ -231,12 +231,18 @@
       <div class="caixa-cab"><span class="etiqueta-clara">7 dias grátis na primeira assinatura</span><h3>Escolha o seu plano</h3></div>
       <p style="margin:-8px 0 14px;color:var(--cinza)">Assinatura de <b id="emailPlano"></b></p>
       <div class="escolha">
-        <label><input type="radio" name="plano" value="mensal"><b>Mensal</b><span>R$ 29,90 por mês</span></label>
-        <label><input type="radio" name="plano" value="semestral"><b>Semestral</b><span>R$ 149,40 a cada 6 meses<br>(R$ 24,90/mês)</span></label>
-        <label><input type="radio" name="plano" value="anual"><b>Anual</b><span>R$ 238,80 por ano<br>(R$ 19,90/mês)</span></label>
+        <label><input type="radio" name="plano" value="mensal"><b>Mensal</b><span data-preco="mensal">R$ 29,90 por mês</span></label>
+        <label><input type="radio" name="plano" value="semestral"><b>Semestral</b><span data-preco="semestral">R$ 149,40 a cada 6 meses<br>(R$ 24,90/mês)</span></label>
+        <label><input type="radio" name="plano" value="anual"><b>Anual</b><span data-preco="anual">R$ 238,80 por ano<br>(R$ 19,90/mês)</span></label>
       </div>
+      <div style="display:flex;gap:8px;margin:0 0 16px">
+        <input id="cupom" maxlength="30" placeholder="Cupom de desconto (opcional)" autocomplete="off"
+          style="flex:1;min-width:0;padding:12px 14px;border:1.5px solid var(--linha);border-radius:12px;font:inherit;text-transform:uppercase">
+        <button class="btn btn-azul" id="btnCupom" type="button">Aplicar</button>
+      </div>
+      <div id="msgCupom" style="margin:-8px 0 16px"></div>
       <button class="btn btn-ouro largo" id="btnAssinar" type="button">Continuar no Mercado Pago</button>
-      <p style="margin:12px 0 0;color:var(--cinza);font-size:14px">O cartão fica no Mercado Pago, e a cobrança só acontece no fim dos 7 dias grátis. Cancele quando quiser.</p>
+      <p style="margin:12px 0 0;color:var(--cinza);font-size:14px" id="notaPlano">O cartão fica no Mercado Pago, e a cobrança só acontece no fim dos 7 dias grátis. Cancele quando quiser.</p>
       <div id="msgPlano"></div>
     </div>
 
@@ -290,7 +296,8 @@ const ERROS = {
   email_invalido: 'Confira o e-mail digitado.', termo_obrigatorio: 'É preciso aceitar o termo de uso.',
   nao_cadastrado: 'Este e-mail ainda não tem cadastro. Crie o seu acesso primeiro.', bloqueado: 'Este acesso está bloqueado. Fale com o suporte.',
   ja_assinante: 'Você já tem uma assinatura ativa. Para trocar de plano ou de cartão, use as Assinaturas do Mercado Pago.',
-  plano_invalido: 'Escolha um plano.', falha_servidor: 'O servidor não respondeu. Tente de novo em instantes.'
+  plano_invalido: 'Escolha um plano.', falha_servidor: 'O servidor não respondeu. Tente de novo em instantes.',
+  cupom_invalido: 'Cupom não encontrado. Confira o código.', cupom_vencido: 'Este cupom já venceu.', cupom_esgotado: 'Este cupom já foi usado o número máximo de vezes.'
 };
 const chamar = dados => fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados) }).then(x => x.json());
 
@@ -308,10 +315,12 @@ function escolherPlano(plano) { const r = document.querySelector(`input[name="pl
 $('#btnAssinar').addEventListener('click', async () => {
   const plano = (document.querySelector('input[name="plano"]:checked') || {}).value;
   if (!plano) { $('#msgPlano').innerHTML = '<div class="msg erro">Escolha um dos planos.</div>'; return; }
+  // Digitou o cupom e não clicou em Aplicar: aplica antes; cupom com erro não segue (a mensagem aparece embaixo dele).
+  if ($('#cupom').value.trim() && !cupomAplicado) { await aplicarCupom(); if (!cupomAplicado) return; }
   const b = $('#btnAssinar');
   b.disabled = true; b.textContent = 'Abrindo o Mercado Pago…'; $('#msgPlano').innerHTML = '';
   try {
-    const r = await chamar({ acao: 'assinar', email: emailCadastro, plano });
+    const r = await chamar({ acao: 'assinar', email: emailCadastro, plano, cupom: cupomAplicado });
     if (!r.ok || !r.url) throw new Error(ERROS[r.erro] || 'Não consegui abrir o pagamento. Tente de novo.');
     location.href = r.url;
   } catch (e) {
@@ -319,6 +328,43 @@ $('#btnAssinar').addEventListener('click', async () => {
     b.disabled = false; b.textContent = 'Continuar no Mercado Pago';
   }
 });
+
+// Cupom: desconto só na 1ª cobrança (o servidor confere de novo ao gerar o link).
+let cupomAplicado = '';
+const PRECO_ORIGINAL = {};
+document.querySelectorAll('[data-preco]').forEach(s => { PRECO_ORIGINAL[s.dataset.preco] = s.innerHTML; });
+const NOTA_ORIGINAL = $('#notaPlano').textContent;
+const real = v => 'R$ ' + v.toFixed(2).replace('.', ',');
+function limparCupom() {
+  cupomAplicado = '';
+  document.querySelectorAll('[data-preco]').forEach(s => { s.innerHTML = PRECO_ORIGINAL[s.dataset.preco]; });
+  $('#notaPlano').textContent = NOTA_ORIGINAL;
+}
+async function aplicarCupom() {
+  const codigo = $('#cupom').value.trim().toUpperCase();
+  limparCupom();
+  $('#msgCupom').innerHTML = '';
+  if (!codigo) return;
+  const b = $('#btnCupom'); b.disabled = true;
+  try {
+    const r = await chamar({ acao: 'cupom_ver', email: emailCadastro, cupom: codigo });
+    if (!r.ok) throw new Error(ERROS[r.erro] || 'Não consegui conferir o cupom.');
+    cupomAplicado = r.codigo;
+    document.querySelectorAll('[data-preco]').forEach(s => {
+      const v = r.valores[s.dataset.preco];
+      if (v) s.innerHTML = `<s>${real(v.de)}</s> <b style="color:var(--verde)">${real(v.por)}</b><br>na 1ª cobrança`;
+    });
+    $('#msgCupom').innerHTML = `<div class="msg ok" style="margin:0">Cupom <b>${esc(r.codigo)}</b>: ${r.pct}% de desconto na primeira cobrança. Depois, a assinatura segue no preço normal.</div>`;
+    $('#notaPlano').textContent = r.sem_teste
+      ? 'O cartão fica no Mercado Pago. Com este cupom, a primeira cobrança (com desconto) é feita na hora, sem os 7 dias grátis. Cancele quando quiser.'
+      : NOTA_ORIGINAL;
+  } catch (e) {
+    $('#msgCupom').innerHTML = `<div class="msg erro" style="margin:0">${esc(e.message || 'Falha de conexão.')}</div>`;
+  } finally { b.disabled = false; }
+}
+$('#btnCupom').addEventListener('click', aplicarCupom);
+$('#cupom').addEventListener('keydown', e => { if (e.key === 'Enter') aplicarCupom(); });
+$('#cupom').addEventListener('input', () => { if (cupomAplicado) { limparCupom(); $('#msgCupom').innerHTML = ''; } });
 
 // Botões dos cards de plano: marcam o plano; quem já tem cadastro vai direto para a escolha.
 document.querySelectorAll('[data-plano]').forEach(a => a.addEventListener('click', ev => {
@@ -345,6 +391,7 @@ $('#form').addEventListener('submit', async ev => {
     if (!r.ok) throw new Error(ERROS[r.erro] || 'Não consegui cadastrar. Tente de novo.');
     try { localStorage.setItem('agendador_cadastro', email); } catch (e) { /* sem armazenamento */ }
     liberarInstalacao(email);
+    if ($('#cupom').value.trim()) aplicarCupom();
     $('#boxPlano').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (e) {
     $('#msgCadastro').innerHTML = `<div class="msg erro">${esc(e.message || 'Falha de conexão.')}</div>`;
@@ -368,6 +415,11 @@ const params = new URLSearchParams(location.search);
 let jaCadastrado = params.get('email') || '';
 try { jaCadastrado = jaCadastrado || localStorage.getItem('agendador_cadastro') || ''; } catch (err) { /* sem armazenamento */ }
 if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(jaCadastrado)) { $('#email').value = jaCadastrado; liberarInstalacao(jaCadastrado.toLowerCase()); }
+// Link com ?cupom=CODIGO: já deixa o cupom preenchido (e aplicado, se o plano estiver aberto).
+if (params.get('cupom')) {
+  $('#cupom').value = params.get('cupom').slice(0, 30).toUpperCase();
+  if (emailCadastro) aplicarCupom();
+}
 if (params.get('email')) {
   $('#boxCadastro').classList.add('oculto');
   addEventListener('load', () => $('#boxPlano').scrollIntoView({ block: 'start' }));
