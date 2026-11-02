@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Agendador Full · Minha assinatura</title>
+<link rel="icon" href="icone.png">
+<link rel="stylesheet" href="estilo.css">
+<style>
+  .linha { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--borda); }
+  .linha:last-of-type { border-bottom: 0; }
+  .linha span { color: var(--cinza); }
+  .acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .oferta { border: 1.5px solid var(--borda); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .oferta div { flex: 1 1 200px; }
+  .oferta small { display: block; color: var(--cinza); }
+  label.campo select { display: block; width: 100%; margin-top: 5px; padding: 11px 12px; border: 1px solid var(--borda); border-radius: 10px; color: var(--texto); background: #fff; font: inherit; }
+  @media (max-width: 480px) { .acoes { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header class="topo"><div class="dentro">
+  <img src="icone.png" alt="">
+  <div><strong>Agendador Full</strong><span>Minha assinatura</span></div>
+  <div class="dir"><a href="./">Início</a></div>
+</div></header>
+
+<main>
+  <section class="card" id="login">
+    <h1>Minha assinatura</h1>
+    <p class="sub">Veja seu plano, troque ou cancele. Entrar aqui não encerra o acesso da extensão.</p>
+    <div id="etapaEmail">
+      <label class="campo">E-mail do cadastro<input id="email" type="email" autocomplete="email"></label>
+      <button class="btn primario largo" id="btnCodigo">Enviar código</button>
+    </div>
+    <div id="etapaCodigo" class="oculto">
+      <label class="campo">Código de 6 dígitos (enviado para o seu e-mail)<input id="codigo" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
+      <button class="btn primario largo" id="btnEntrar">Entrar</button>
+      <p><button class="btn claro mini" id="btnVoltar">Trocar e-mail</button></p>
+    </div>
+    <div id="msgLogin"></div>
+  </section>
+
+  <section class="card oculto" id="painel"></section>
+  <div id="msgPainel"></div>
+
+  <p class="sub" style="font-size:13.5px">Pelo <a href="https://www.mercadopago.com.br/subscriptions" target="_blank" rel="noopener">Mercado Pago</a> você também troca o cartão ou cancela. Dúvidas: <a href="mailto:agendadorfull.app@gmail.com">agendadorfull.app@gmail.com</a> (respondemos em até 5 dias).</p>
+</main>
+
+<script>
+const API = 'https://qasrccmtrllotukyeiax.supabase.co/functions/v1/agendador-auth';
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const data = t => t ? new Date(t).toLocaleDateString('pt-BR') : '—';
+const reais = v => 'R$ ' + Number(v).toFixed(2).replace('.', ',');
+const PLANOS = {
+  mensal: { nome: 'Mensal', meses: 1, valor: 29.90, porMes: 29.90 },
+  semestral: { nome: 'Semestral', meses: 6, valor: 149.40, porMes: 24.90 },
+  anual: { nome: 'Anual', meses: 12, valor: 238.80, porMes: 19.90 },
+};
+const SITUACAO = { sem: 'Sem assinatura', pendente: 'Pagamento não concluído', ativa: 'Ativa', pausada: 'Pausada', cancelada: 'Cancelada' };
+const ERROS = {
+  nao_cadastrado: 'Este e-mail não está cadastrado.', bloqueado: 'Este cadastro está bloqueado. Fale com o suporte.', email_invalido: 'E-mail inválido.',
+  muitos_pedidos: 'Limite de 3 códigos por dia para este e-mail.', limite_geral: 'Limite diário de códigos atingido. Tente amanhã.',
+  codigo_errado: 'Código errado.', codigo_expirado: 'Código expirado. Peça outro.', muitas_tentativas: 'Muitas tentativas. Peça outro código.',
+  sessao_invalida: 'Sua sessão terminou. Entre de novo.', sem_assinatura_ativa: 'Não há assinatura ativa para cancelar.',
+  troca_invalida: 'Essa troca de plano não está disponível.', falha_servidor: 'O servidor não respondeu. Nada foi alterado. Tente de novo.',
+};
+let token = null, conta = null;
+
+async function api(acao, dados = {}) {
+  try {
+    const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ acao, ...dados }) });
+    return await r.json();
+  } catch (e) { return { ok: false, erro: 'falha_servidor' }; }
+}
+const msg = (onde, tipo, txt) => { $(onde).innerHTML = txt ? `<div class="msg ${tipo}">${esc(txt)}</div>` : ''; };
+const erroPainel = r => {
+  if (r.erro === 'sessao_invalida') { token = null; $('#painel').classList.add('oculto'); $('#login').classList.remove('oculto'); $('#etapaCodigo').classList.add('oculto'); $('#etapaEmail').classList.remove('oculto'); return msg('#msgLogin', 'erro', ERROS.sessao_invalida); }
+  msg('#msgPainel', 'erro', ERROS[r.erro] || ERROS.falha_servidor);
+};
+
+$('#btnCodigo').addEventListener('click', async () => {
+  const email = $('#email').value.trim().toLowerCase();
+  if (!email) return;
+  $('#btnCodigo').disabled = true;
+  const r = await api('pedir_codigo', { email, tipo: 'conta' });
+  $('#btnCodigo').disabled = false;
+  if (!r.ok) return msg('#msgLogin', 'erro', ERROS[r.erro] || 'Não consegui enviar o código.');
+  msg('#msgLogin', 'info', 'Código enviado. Confira o e-mail (vale 10 minutos).');
+  $('#etapaEmail').classList.add('oculto');
+  $('#etapaCodigo').classList.remove('oculto');
+  $('#codigo').focus();
+});
+$('#btnVoltar').addEventListener('click', () => { $('#etapaCodigo').classList.add('oculto'); $('#etapaEmail').classList.remove('oculto'); msg('#msgLogin'); });
+$('#btnEntrar').addEventListener('click', async () => {
+  $('#btnEntrar').disabled = true;
+  const r = await api('confirmar', { email: $('#email').value.trim().toLowerCase(), codigo: $('#codigo').value.trim(), tipo: 'conta', dispositivo: 'site-assinatura' });
+  $('#btnEntrar').disabled = false;
+  if (!r.ok) return msg('#msgLogin', 'erro', (ERROS[r.erro] || 'Não consegui entrar.') + (r.restam != null ? ` Restam ${r.restam} tentativa(s).` : ''));
+  token = r.token;
+  msg('#msgLogin');
+  carregar();
+});
+
+async function carregar() {
+  const r = await api('conta_ver', { token });
+  if (!r.ok) return erroPainel(r);
+  conta = r;
+  $('#login').classList.add('oculto');
+  $('#painel').classList.remove('oculto');
+  telaResumo();
+}
+
+function telaResumo() {
+  msg('#msgPainel');
+  const a = conta.assinatura, p = PLANOS[a.plano];
+  const vale = a.pago_ate && new Date(a.pago_ate) > Date.now();
+  let linhas = `<div class="linha"><span>E-mail</span><b>${esc(conta.email)}</b></div>`;
+  if (a.cortesia) {
+    $('#painel').innerHTML = `<h2>Sua conta</h2>${linhas}<div class="linha"><span>Situação</span><b>Cortesia${a.cortesia_ate ? ' até ' + data(a.cortesia_ate) : ''}</b></div>`;
+    return;
+  }
+  linhas += `<div class="linha"><span>Situação</span><b>${esc(SITUACAO[a.situacao] || a.situacao)}</b></div>`;
+  if (p) linhas += `<div class="linha"><span>Plano</span><b>${p.nome} · ${reais(p.valor)}</b></div>`;
+  if (a.situacao === 'ativa' && conta.proxima) linhas += `<div class="linha"><span>Próxima cobrança</span><b>${data(conta.proxima)}</b></div>`;
+  if (a.pago_ate) linhas += `<div class="linha"><span>Acesso</span><b>${vale ? 'até ' + data(a.pago_ate) : 'venceu em ' + data(a.pago_ate)}</b></div>`;
+  const ativa = ['ativa', 'pausada'].includes(a.situacao);
+  $('#painel').innerHTML = `<h2>Sua assinatura</h2>${linhas}` + (ativa
+    ? `<div class="acoes"><button class="btn claro" id="btnSair">Cancelar assinatura</button></div>`
+    : `<div class="acoes"><a class="btn primario" href="./#planos">Ver planos</a></div>`);
+  if (ativa) $('#btnSair').addEventListener('click', telaCancelar);
+}
+
+function telaCancelar() {
+  msg('#msgPainel');
+  const a = conta.assinatura, atual = PLANOS[a.plano];
+  const maiores = Object.entries(PLANOS).filter(([, p]) => atual && a.situacao === 'ativa' && p.meses > atual.meses);
+  const ofertas = maiores.length ? `<p><b>Se o problema for o preço</b>, os planos maiores saem mais baratos por mês:</p>` + maiores.map(([k, p]) => `
+    <div class="oferta"><div><b>${p.nome}: ${reais(p.porMes)} por mês</b><small>${reais(p.valor)} cobrados hoje. O tempo restante do plano atual não é somado.</small></div>
+    <button class="btn claro mini" data-trocar="${k}">Trocar para ${p.nome}</button></div>`).join('') : '';
+  const arr = conta.arrependimento;
+  $('#painel').innerHTML = `<h2>Cancelar assinatura</h2>
+    <p>Ao cancelar, não haverá novas cobranças.${a.pago_ate ? ` Você continua usando até <b>${data(a.pago_ate)}</b>.` : ''} Não há devolução proporcional do período em andamento.</p>
+    ${ofertas}
+    <label class="campo">Motivo (opcional)
+      <select id="motivo"><option value="">Prefiro não dizer</option><option>Não preciso mais</option><option>Preço</option><option>Não marcou as vagas que eu queria</option><option>Problema técnico</option><option>Outro</option></select>
+    </label>
+    ${arr ? `<label class="check"><input type="checkbox" id="arrepender"><span>Quero desistir e receber de volta ${reais(arr.valor)}, cobrados em ${data(arr.quando)} (direito de arrependimento, até 7 dias). O acesso termina quando a devolução for feita.</span></label>` : ''}
+    <div class="acoes"><button class="btn claro" id="btnFicar">Manter assinatura</button><button class="btn perigo" id="btnConfirmar">Cancelar assinatura</button></div>`;
+  $('#btnFicar').addEventListener('click', telaResumo);
+  $('#btnConfirmar').addEventListener('click', cancelar);
+  document.querySelectorAll('[data-trocar]').forEach(b => b.addEventListener('click', () => trocar(b.dataset.trocar, b)));
+}
+
+async function cancelar() {
+  const b = $('#btnConfirmar');
+  b.disabled = true; b.textContent = 'Cancelando…';
+  const r = await api('conta_cancelar', { token, motivo: $('#motivo').value, arrepender: !!($('#arrepender') && $('#arrepender').checked) });
+  if (!r.ok) { b.disabled = false; b.textContent = 'Cancelar assinatura'; return erroPainel(r); }
+  $('#painel').innerHTML = `<h2>Assinatura cancelada</h2>
+    <div class="msg ok">Recebemos seu pedido. Não haverá novas cobranças. Enviamos a confirmação para ${esc(conta.email)}.</div>
+    <p>${r.devolucao ? 'Seu pedido de devolução foi registrado e vamos responder em até 5 dias.' : r.acesso_ate ? `Você continua usando até <b>${data(r.acesso_ate)}</b>.` : ''}</p>
+    <a class="btn claro" href="./">Voltar ao início</a>`;
+}
+
+async function trocar(plano, b) {
+  b.disabled = true;
+  const r = await api('conta_trocar', { token, plano });
+  if (!r.ok || !r.url) { b.disabled = false; return erroPainel(r); }
+  location.href = r.url;
+}
+</script>
+</body>
+</html>
