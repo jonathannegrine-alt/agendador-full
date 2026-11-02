@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agendador Full · Ajuda</title>
+<link rel="icon" href="icone.png">
+<link rel="stylesheet" href="estilo.css">
+<style>
+  label.campo select, label.campo textarea { display: block; width: 100%; margin-top: 5px; padding: 11px 12px; border: 1px solid var(--borda); border-radius: 10px; color: var(--texto); background: #fff; font: inherit; }
+  label.campo textarea { min-height: 130px; resize: vertical; }
+  .armadilha { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+</style>
+</head>
+<body>
+<header class="topo"><div class="dentro">
+  <img src="icone.png" alt="">
+  <div><strong>Agendador Full</strong><span>Ajuda</span></div>
+  <div class="dir"><a href="./">Início</a></div>
+</div></header>
+
+<main>
+  <section class="card" id="form">
+    <h1>Como podemos ajudar?</h1>
+    <p class="sub">Conte o que aconteceu. Respondemos no seu e-mail em até 5 dias.</p>
+    <label class="campo">E-mail para resposta<input id="email" type="email" autocomplete="email"></label>
+    <label class="campo">Assunto
+      <select id="tipo"><option>Instabilidade ou erro</option><option>Dúvida</option><option>Assinatura ou cobrança</option><option>Outro</option></select>
+    </label>
+    <label class="campo">Mensagem<textarea id="mensagem" maxlength="2000" placeholder="Se for erro: o que você estava fazendo, o que apareceu na tela e quando aconteceu."></textarea></label>
+    <div class="armadilha" aria-hidden="true"><label>Site<input id="site" tabindex="-1" autocomplete="off"></label></div>
+    <button class="btn primario largo" id="btnEnviar">Enviar</button>
+    <div id="msg"></div>
+    <p class="sub" style="font-size:13.5px;margin:14px 0 0">Para cancelar ou trocar de plano, use <a href="assinatura.html">Minha assinatura</a>. Não envie senhas nem dados de cartão.</p>
+  </section>
+  <section class="card oculto" id="pronto"></section>
+</main>
+
+<script>
+const API = 'https://qasrccmtrllotukyeiax.supabase.co/functions/v1/agendador-auth';
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ERROS = {
+  email_invalido: 'Confira o e-mail.', mensagem_curta: 'Escreva um pouco mais sobre o que aconteceu.',
+  muitos_pedidos: 'Muitos pedidos enviados hoje. Tente amanhã ou escreva para agendadorfull.app@gmail.com.',
+};
+const falha = 'Não consegui enviar. Tente de novo ou escreva para agendadorfull.app@gmail.com.';
+$('#btnEnviar').addEventListener('click', async () => {
+  const b = $('#btnEnviar');
+  b.disabled = true;
+  let r;
+  try {
+    const resp = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+      acao: 'ajuda', email: $('#email').value.trim().toLowerCase(), tipo: $('#tipo').value, mensagem: $('#mensagem').value, site: $('#site').value,
+    }) });
+    r = await resp.json();
+  } catch (e) { r = { ok: false }; }
+  b.disabled = false;
+  if (!r.ok) { $('#msg').innerHTML = `<div class="msg erro">${esc(ERROS[r.erro] || falha)}</div>`; return; }
+  $('#form').classList.add('oculto');
+  $('#pronto').classList.remove('oculto');
+  $('#pronto').innerHTML = `<h2>Recebemos seu pedido</h2><div class="msg ok">Número do pedido: <b>${esc(r.numero)}</b>. Vamos responder em ${esc($('#email').value.trim())} em até 5 dias.</div><p><a class="btn claro" href="./">Voltar ao início</a></p>`;
+});
+</script>
+</body>
+</html>
