@@ -134,22 +134,57 @@ function telaResumo() {
   if (ativa) $('#btnSair').addEventListener('click', telaCancelar);
 }
 
+// Esteira de cancelamento: 1) motivo, 2) o que muda, 3) oferta e cancelamento final.
+// As ofertas só aparecem na última etapa. São só duas etapas antes dela, e "Prefiro não dizer" sempre avança: sair continua fácil.
+let motivoCancelar = '';
+const MOTIVOS = ['Não preciso mais', 'Preço', 'Não marcou as vagas que eu queria', 'Problema técnico', 'Outro', 'Prefiro não dizer'];
+const etapa = n => `<p class="sub" style="margin:0 0 10px;font-size:13px">Etapa ${n} de 3</p>`;
+
 function telaCancelar() {
   msg('#msgPainel');
+  const arr = conta.arrependimento;
+  $('#painel').innerHTML = `<h2>Cancelar assinatura</h2>${etapa(1)}
+    <p><b>Por que você quer cancelar?</b></p>
+    ${MOTIVOS.map(m => `<label class="check"><input type="radio" name="motivo" value="${esc(m)}"${m === motivoCancelar ? ' checked' : ''}><span>${esc(m)}</span></label>`).join('')}
+    ${arr ? `<div class="msg info">Você foi cobrado em ${data(arr.quando)} e ainda pode desistir com devolução de ${reais(arr.valor)}. A opção está na última etapa.</div>` : ''}
+    <div class="acoes"><button class="btn claro" id="btnFicar">Manter assinatura</button><button class="btn primario" id="btnSeguir" disabled>Continuar</button></div>`;
+  $('#btnFicar').addEventListener('click', telaResumo);
+  const seguir = $('#btnSeguir');
+  seguir.disabled = !motivoCancelar;
+  document.querySelectorAll('[name=motivo]').forEach(r => r.addEventListener('change', () => { motivoCancelar = r.value; seguir.disabled = false; }));
+  seguir.addEventListener('click', telaConsequencias);
+}
+
+function telaConsequencias() {
+  const a = conta.assinatura;
+  const apoio = ['Não marcou as vagas que eu queria', 'Problema técnico'].includes(motivoCancelar)
+    ? `<div class="msg info">Talvez a gente consiga resolver. <a href="ajuda.html" target="_blank" rel="noopener">Conte o que aconteceu</a> e respondemos em até 5 dias.</div>` : '';
+  $('#painel').innerHTML = `<h2>Cancelar assinatura</h2>${etapa(2)}
+    <p><b>O que muda se você cancelar:</b></p>
+    <ul>
+      <li>A extensão para de monitorar e marcar vagas${a.pago_ate ? ` depois de <b>${data(a.pago_ate)}</b>` : ''}.</li>
+      <li>Não haverá novas cobranças.</li>
+      <li>Os 7 dias grátis valem só para a primeira assinatura. Se voltar depois, a cobrança é feita na hora.</li>
+    </ul>
+    ${apoio}
+    <div class="acoes"><button class="btn claro" id="btnFicar">Manter assinatura</button><button class="btn primario" id="btnSeguir">Continuar cancelando</button></div>`;
+  $('#btnFicar').addEventListener('click', telaResumo);
+  $('#btnSeguir').addEventListener('click', telaFinal);
+}
+
+function telaFinal() {
   const a = conta.assinatura, atual = PLANOS[a.plano];
   const maiores = Object.entries(PLANOS).filter(([, p]) => atual && a.situacao === 'ativa' && p.meses > atual.meses);
-  const ofertas = maiores.length ? `<p><b>Se o problema for o preço</b>, os planos maiores saem mais baratos por mês:</p>` + maiores.map(([k, p]) => `
+  const ofertas = maiores.length ? `<p>Os planos maiores também saem mais baratos por mês:</p>` + maiores.map(([k, p]) => `
     <div class="oferta"><div><b>${p.nome}: ${reais(p.porMes)} por mês</b><small>${reais(p.valor)} cobrados hoje. O tempo restante do plano atual não é somado.</small></div>
     <button class="btn claro mini" data-trocar="${k}">Trocar para ${p.nome}</button></div>`).join('') : '';
   const arr = conta.arrependimento, d = conta.desconto;
   const oferta = d ? `<div class="oferta"><div><b>Fique com ${d.pct}% de desconto: ${reais(d.valor)} em vez de ${reais(d.de)}</b><small>Só na próxima cobrança. Depois volta a ${reais(d.de)}. Oferta única.</small></div>
     <button class="btn sucesso mini" id="btnDesconto">Aceitar desconto</button></div>` : '';
-  $('#painel').innerHTML = `<h2>Cancelar assinatura</h2>
-    <p>Ao cancelar, não haverá novas cobranças.${a.pago_ate ? ` Você continua usando até <b>${data(a.pago_ate)}</b>.` : ''} Não há devolução proporcional do período em andamento.</p>
+  $('#painel').innerHTML = `<h2>Cancelar assinatura</h2>${etapa(3)}
+    ${oferta || ofertas ? '<p><b>Antes de sair, temos uma oferta para você:</b></p>' : ''}
     ${oferta}${ofertas}
-    <label class="campo">Motivo (opcional)
-      <select id="motivo"><option value="">Prefiro não dizer</option><option>Não preciso mais</option><option>Preço</option><option>Não marcou as vagas que eu queria</option><option>Problema técnico</option><option>Outro</option></select>
-    </label>
+    <p>Ao cancelar, não haverá novas cobranças.${a.pago_ate ? ` Você continua usando até <b>${data(a.pago_ate)}</b>.` : ''} Não há devolução proporcional do período em andamento.</p>
     ${arr ? `<label class="check"><input type="checkbox" id="arrepender"><span>Quero desistir e receber de volta ${reais(arr.valor)}, cobrados em ${data(arr.quando)} (direito de arrependimento, até 7 dias). O acesso termina quando a devolução for feita.</span></label>` : ''}
     <div class="acoes"><button class="btn claro" id="btnFicar">Manter assinatura</button><button class="btn perigo" id="btnConfirmar">Cancelar assinatura</button></div>`;
   $('#btnFicar').addEventListener('click', telaResumo);
@@ -161,7 +196,7 @@ function telaCancelar() {
 async function cancelar() {
   const b = $('#btnConfirmar');
   b.disabled = true; b.textContent = 'Cancelando…';
-  const r = await api('conta_cancelar', { token, motivo: $('#motivo').value, arrepender: !!($('#arrepender') && $('#arrepender').checked) });
+  const r = await api('conta_cancelar', { token, motivo: motivoCancelar === 'Prefiro não dizer' ? '' : motivoCancelar, arrepender: !!($('#arrepender') && $('#arrepender').checked) });
   if (!r.ok) { b.disabled = false; b.textContent = 'Cancelar assinatura'; return erroPainel(r); }
   $('#painel').innerHTML = `<h2>Assinatura cancelada</h2>
     <div class="msg ok">Recebemos seu pedido. Não haverá novas cobranças. Enviamos a confirmação para ${esc(conta.email)}.</div>
